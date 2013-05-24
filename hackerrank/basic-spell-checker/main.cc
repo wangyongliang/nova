@@ -1,100 +1,209 @@
 // Author: wangyongliang.wyl@gmail.com (Wang Yongliang)
 // github:https://github.com/wangyongliang
+// this problem can be sovle by data structure named Trie
+// final score: 49.32
+// there should be some bugs in the trie construction, such as spliting words
 
-#include <iostream>
-#include <vector>
-#include <map>
-#include <string>
-#include <cstdio>
 #include <cctype>
+#include <cstdio>
+#include <cstring>
+#include <iostream>
+#include <map>
 #include <set>
+#include <string>
+#include <vector>
 
-using std::cin;
-using std::endl;
-using std::cout;
-using std::vector;
-using std::map;
-using std::string;
-using std::set;
+using namespace std;
 
-class Segmenter {
+class Node {
 public:
-    Segmenter() {
-        delimter_ = "!\"#$%&'()*+,-./0123456789:;<=>?@[]^_|~";
+  Node() {
+    for (int i = 0; i < 26; i ++)
+      index[i] = NULL;
+    count = 0;
+  }
+  ~Node() {
+    for (int i = 0; i < 26; i ++) {
+      if (index[i] != NULL) delete index[i];
     }
-    ~Segmenter() {
-    }
-    void Segment(const string &text, vector<string> &terms) {
-        string token;
-        token = "";
-        for (size_t i = 0; i < text.size(); ++i) {
-            if (delimter_.find(text[i]) != string::npos) {
-                ToLower(token);
-                terms.push_back(token);
-                token = "";
-            } else {
-                token += text[i];
-            }
-        }
-        if (token.size()) {
-            ToLower(token);
-            terms.push_back(token);
-        }
-    }
-    
-    void ToLower(string& text) {
-        for (size_t i = 0; i < text.size(); ++i) {
-            text[i] = static_cast<char>(tolower(text[i]));
-        }
-    }
-private:
-    string delimter_;
+  }
+  Node *index[26];
+  int count;
 };
 
-void generate_dict() {
-    freopen("corpus.txt","r", stdin);
-    freopen("dict.txt", "w", stdout);
-    string text;
-    map<string, int> dict;
+class Trie {
+public:
+  Trie() {
+    string delimter = "!\"#$%&'()*+,-./0123456789:;<=>?@[]^_|~";
+    root_ = NULL;
+    FILE *fp = fopen("corpus.txt", "r");
+    char buffer[1000];
+    int len;
+    while (fscanf(fp, "%s", buffer) != EOF) {
+      len = strlen(buffer);
 
-    Segmenter segmenter;
-    vector<string> words;
-    while (cin >> text) {
-        words.clear();
-        segmenter.Segment(text, words);
-        // cout << text << endl;
-        // cout << words.size() << endl;
-        for (std::vector<string>::iterator i = words.begin(); 
-            i != words.end(); ++i) {
-            dict[*i] ++;
-        }
+      for (len -- ; len >= 0; len --) {
+        if (isalpha(buffer[len])) break;
+        buffer[len] = '\0';
+      }
+      for (; len >= 0; len --) {
+        buffer[len] = char(tolower(buffer[len]));
+      }
+      Insert(buffer);
     }
+    fclose(fp);
+  }
 
-    for (map<string, int>::iterator it = dict.begin(); it != dict.end();
-        it ++) {
-        cout << it->first << "|" << it->second << endl;
-    }    
+  ~Trie() {
+    if (root_ != NULL) {
+      delete root_;
+    }
+  }
+
+  void Insert(char str[]) {
+    if (root_ == NULL) root_ = new Node();
+    Insert(root_, str, 0);
+  }
+
+  Node* Find(char buffer[]) {
+    return Find(root_, buffer, 0);
+  }
+
+private:
+  void Insert(Node *current, char str[], int pos) {
+    if (!str[pos]) { // stop at the end of string
+      current->count ++;
+      return;
+    }
+    if (!isalpha(str[pos])) { 
+      // split string into words by non-alpha char
+      current->count ++;
+      Insert(root_, str, pos + 1);
+    } else {
+      int idx = str[pos] - 'a';
+      if (current->index[idx] == NULL) {
+        current->index[idx] = new Node();
+      }
+      Insert(current->index[idx], str, pos + 1);
+    }
+  }
+
+  // Get the last node of this string, return NULL
+  // if string isn't existed in Trie
+  Node* Find(Node *current, char str[], int pos) {
+    if (current == NULL) 
+      return NULL;
+    if (!str[pos]) {
+      return current->count > 0 ? current:NULL;
+    }
+    if (!isalpha(str[pos]))
+      return NULL;
+    int idx = tolower(str[pos]) - 'a';
+    Node *result =  NULL;
+    if (current->index[idx] != NULL) {
+      return Find(current->index[idx], str, pos + 1);
+    } else {
+      return NULL;
+    }
+  }
+  Node *root_;
+};
+bool update_result(Node* result, char str[], 
+                  Node* new_result, char new_str[]) {
+  if (new_result == NULL) return false;
+  if (result == NULL) 
+    return true;
+  if (result->count < new_result->count)
+    return true;
+  else if (result->count > new_result->count)
+    return false;
+  if (strcmp(str, new_str) > 0)
+    return true;
+  return false;
 }
 
-void generate_punch() {
-    freopen("corpus.txt","r", stdin);
-    freopen("punch.txt", "w", stdout);
-    string text;
-    set<char> punch;
-    while (cin >> text) {
-        for (size_t i = 0; i < text.size(); ++i) {
-            if (!isalpha(text[i])) punch.insert(text[i]);
-        }
+int main(int argc, char const *argv[]) {
+  Trie trie;
+  char copy[300];
+  char buffer[300];
+  Node *result;
+  Node *tmp;
+  char ans[30];
+  int query;
+  scanf("%d", &query);
+  gets(buffer);
+  while (query -- ) {
+    gets(buffer);
+    int len = strlen(buffer);
+    if (len > 20) goto end;
+    result = trie.Find(buffer);
+    if (result) {
+      strcpy(ans, buffer);
+      goto end;
     }
     
-    for (set<char>::iterator it = punch.begin(); it != punch.end(); \
-        it ++) {
-        cout << *it;
+    if (len > 1) {
+      for (int i = 0; buffer[i]; i ++) {
+        for (int j = 0; buffer[j]; j ++) {
+          if (j == i) continue;
+          copy[j - (j > i)] = buffer[j];
+        }
+        copy[len - 1] = 0;
+        // printf("%s\n", copy);
+        tmp = trie.Find(copy);
+        if (update_result(result, ans, tmp, copy)) {
+          result = tmp;
+          strcpy(ans, copy);
+        }
+      }
     }
-    cout << endl;
-}
-int main(int argc, char const *argv[]) {
-    // generate_punch();
-    generate_dict();
-    return 0;
+
+    // replace char
+    strcpy(copy, buffer);
+    for (int i = 0; buffer[i]; i ++) {
+      for (char ch = 'a'; ch <= 'z'; ch ++) {
+        if (ch == buffer[i]) continue;
+        copy[i] = ch;
+        tmp = trie.Find(copy);
+        if (update_result(result, ans, tmp, copy)) {
+          result = tmp;
+          strcpy(ans, copy);
+        }
+      }
+      copy[i] = buffer[i];
+    }
+
+    // add one char
+    for (int i = 0; buffer[i]; i ++) {
+      copy[i] = buffer[i];
+      for (char ch = 'a'; ch <= 'z'; ch ++) {
+        copy[i + 1] = ch;
+        strcpy(copy + i + 2, buffer + i + 1);
+        tmp = trie.Find(copy);
+        if (update_result(result, ans, tmp, copy)) {
+          result = tmp;
+          strcpy(ans, copy);
+        }
+      }
+    }
+
+    // swap two char
+    strcpy(copy, buffer);
+    for (int i = 0; buffer[i + 1]; i ++) {
+      swap(copy[i], copy[i + 1]);
+      tmp = trie.Find(copy);
+      if (update_result(result, ans, tmp, copy)) {
+        result = tmp;
+        strcpy(ans, copy);
+      }
+      swap(copy[i + 1], copy[i]);
+    }
+end:
+    if (result) {
+      printf("%s\n", ans);
+    } else {
+      printf("%s\n", buffer);
+    }
+  }
+  return 0;
 }
