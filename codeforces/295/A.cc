@@ -94,7 +94,7 @@ int main() {
   int x;
   for (int i = 0; i < n; i ++) {
     scanf("%d", &x);
-    array.increase(x, x, 1);
+    array.increase(i, i, x);
   }
   Tuple tuple;
   SegmentTree<int> ops(1, m);
@@ -110,9 +110,18 @@ int main() {
     ops.increase(x, y, 1);
   }
 
+  long long z;
   for (int i = 1; i <= m; i ++) {
-    cout << ops[i] << endl;
+    x = tuples[i - 1].first - 1;
+    y = tuples[i - 1].second - 1;
+    z = 1LL * tuples[i - 1].third * ops[i];
+    array.increase(x, y, z);
   }
+
+  for (int i = array.start_; i <= array.end_; i ++) {
+    printf("%I64d ", array[i]);
+  }
+  printf("\n");
 
   return 0;
 }
