@@ -1,5 +1,8 @@
-// Copyright 2013 Yunrang Inc. All Rights Reserved.
-// Author: Yongliang Wang
+/*
+ * Copyright (C) 2013 yongliangwang <yongliangwang@wangyongliang-desktop>
+ *
+ * Distributed under terms of the MIT license.
+ */
 
 #include <iostream>
 #include <cstring>
