@@ -16,32 +16,32 @@ public:
     memset(value_, 0, size * sizeof(T));
   }
 
-  static int LowBit(int bit) {
+  static int low_bit(int bit) {
     return bit & (-bit);
   }
 
-  void Increase(int pos, T number) {
+  void increse(int pos, T number) {
     value_[pos] += number;
     while (pos < size_) {
       sum_[pos] += number;
-      pos += LowBit(pos);
+      pos += low_bit(pos);
     }
   }
 
-  T Sum(int pos) const {
+  T sum(int pos) const {
     T res(0);
     while (pos > 0) {
       res += sum_[pos];
-      pos -= LowBit(pos);
+      pos -= low_bit(pos);
     }
     return res;
   }
 
-  T Sum(int start, int end) const {
+  T sum(int start, int end) const {
     T result(0);
-    result = Sum(end);
+    result = sum(end);
     if (start > 0)
-      result -= Sum(start - 1);
+      result -= sum(start - 1);
     return result;
   }
 
@@ -49,12 +49,12 @@ public:
     return value_[index];
   }
 
-  void Set(int pos, T number) {
+  void set(int pos, T number) {
     T delta = number - value_[pos];
-    Increase(pos, delta);
+    increse(pos, delta);
   }
 
-  int Size() const {
+  int size() const {
     return size_;
   }
 
@@ -71,28 +71,28 @@ private:
   T* value_;
 };
 
-int main(int argc, char const *argv[]) {  
+int main(int argc, char const *argv[]) {
   TreeArray<int> array(10);
 
-  assert(array.Sum(2, 4) == 0);
+  assert(array.sum(2, 4) == 0);
 
-  // Test increase
-  array.Increase(1, 1);
+  // Test increse
+  array.increse(1, 1);
   for (int i = 1; i < 10; i ++)
-    assert(array.Sum(i) == 1);
-  array.Increase(1, 2);
+    assert(array.sum(i) == 1);
+  array.increse(1, 2);
   for (int i = 1; i < 10; i ++)
-    assert(array.Sum(i) == 3);
-  array.Increase(5, 1);
+    assert(array.sum(i) == 3);
+  array.increse(5, 1);
   for (int i = 5; i < 10; i ++)
-    assert(array.Sum(i) == 4);
+    assert(array.sum(i) == 4);
 
   // Test []
   assert(array[1] == 3);
 
-  array.Set(1, 4);
+  array.set(1, 4);
   assert(array[1] == 4);
-  assert(array.Sum(9) == 5);
-  assert(array.Sum(5, 9) == 4);
+  assert(array.sum(9) == 5);
+  assert(array.sum(5, 9) == 1);
   return 0;
 }
