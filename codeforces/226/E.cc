@@ -3,120 +3,159 @@
 #include <iostream>
 #include <vector>
 #include <cstdio>
+#include <cstring>
 using namespace std;
-class Segment {
-public:
-  Segment(int LEFT, int RIGHT) {
-    count = RIGHT - LEFT + 1;
-    if (LEFT == RIGHT) {
-      left == NULL;
-      right == NULL;
-    } else {
-      int MID = (LEFT + RIGHT) >> 1;
-      left = new Segment(LEFT, MID);
-      right = new Segment(MID + 1, RIGHT);
-    }
-  }
-  Segment():left(NULL), right(NULL), count(0){}
+#define maxn 100100
+vector<int> tree[maxn];
+int parent[maxn];
+int heavy[maxn];
+int depth[maxn];
 
-  Segment *left
-  Segment *right;
-  int count;
-  int sum(int left, int right, int LEFT, int RIGHT) {
-    if (left <= LEFT && right >= RIGHT) {
-      return count;
-    }
-    int MID = (LEFT + RIGHT) >> 1;
-    return this->left->sum(left, right, LEFT, MID) + \
-    this->right->sum(left, right, MID + 1, RIGHT);
-  }
-  Segment* clone(int pos, int delta, int LEFT, int RIGHT) {
-    Segment* new_seg = new Segment();
-    new_seg->count = this->count + delta;
-    int MID = (LEFT + RIGHT) >> 1;
-    if (pos <= MID) {
-      new_seg->left = this->left->clone(pos, delta, LEFT, MID);
-      new_seg->right = this->right;
-    } else {
-      new_seg->left = this->left;
-      new_seg->right = this->right->clone(pos, delta, MID + 1, RIGHT);
-    }
-    return new_seg;
-  }
-};
-#define MAXN 100100
-bool visit[MAXN]={0};
-// Store all paths
-vector<int> paths[MAXN];
-// Store different snapshot of segment tree
-vector<pair<int, Segment*> > snapshots[MAXN];
-// Store the path id for each vertex
-int path_id[MAXN];
-int path_num = 0;
-vector<int> tree[MAXN];
+int size[maxn];
 int root;
-int child[MAXN];
-int heavy[MAXN];
-// count the child and find out heavy edge
-int find_heavy_edge(int v) {
-  child[v] = 1;
-  int max_child = -1;
+
+vector<int> chain[maxn];
+int chain_id[maxn];
+int chain_pos[maxn];
+int chain_size;
+void dfs(int v, int d) {
+  size[v] = 1;
+  heavy[v] = -1;
+  depth[v] = d;
   for (int i = 0; i < tree[v].size(); i ++) {
-    child[v] += find_heavy_edge(tree[v][i]);
-    if (max_child == -1 | child[max_child] < child[tree[v][i]]) {
-      max_child = tree[v][i];
+    dfs(tree[v][i], d + 1);
+    size[v] += size[tree[v][i]];
+    if (heavy[v] == -1 || size[heavy[v]] < size[tree[v][i]]) {
+      heavy[v] = tree[v][i];
     }
   }
-  if (max_child != -1) {
-    heavy[v] = max_child;
-  }
-  return child[v];
+}
+int head(int id) {
+  return chain[id][0];
 }
 
-// Split tree into sub-path
-void split(int v) {
-  if (!visit[v]) {
-    int now = v;
-    while (now != -1) {
-      paths[path_num].push_back(v);
-      path_id = [path_num];
-      visit[now] = true;
-      now = heavy[now];
-    }
-    path_num ++;
+int lca(int v, int u) {
+  while (chain_id[v] != chain_id[u]) {
+    if (depth[head(chain_id[v])] < depth[head(chain_id[u])])
+      u = parent[head(chain_id[u])];
+    else
+      v = parent[head(chain_id[v])];
   }
-  for (int i = 0; i < tree[v].size(); i ++) {
-    split(tree[v][i]);
-  }
+  return depth[u] < depth[v]? u: v;
 }
+
+class Segment{
+public:
+  Segment(int L, int R) {
+    left = right = NULL;
+    count = R - L + 1;
+    if (L < R) {
+      int M = (L + R) >> 1;
+      left = new Segment(L, M);
+      right = new Segment(M + 1, R);
+    }
+  }
+  Segment(): left(NULL), right(NULL), count(0) {}
+  int sum(int l, int r, int L, int R) {
+    if (l <= L && r >= R)
+      return count;
+    int M = (L + R) >> 1;
+    int result = 0;
+    if (l <= M)
+      result += left->sum(l, r, L, M);
+    if (r > M)
+      result += right->sum(l, r, M + 1, R);
+  }
+
+  int find(int pos, int L, int R) {
+    if (L == R) {
+      return L;
+    } else {
+      if (this->left->count <= pos)
+        return this->left->find(pos, L, (L + R) >> 1);
+      else
+        return this->left->find(pos - this->left->count, ((L + R) >> 1) + 1, R);
+    }
+  }
+  Segment* clone(int pos, int delta, int L, int R) {
+    Segment* result = new Segment();
+    result = memcpy(result, this, sizeof(Segment));
+    result->count = this->count + delta;
+    if (L == R) {
+      return result;
+    } else {
+      int M = (L + R) >> 1;
+      if (pos <= M) {
+        result->left = this->left->clone(pos, delta, L, M);
+      }
+      if (pos > M) {
+        resul->right = this->right->clone(pos, delta, M + 1, R);
+      }
+      return result;
+    }
+  }
+  Segment* left, right;
+  int count;
+};
+
+vector<pair<int, Segment*> >snapshots[maxn];
 
 int main() {
-  int n, m;
+  int n;
   scanf("%d", &n);
   for (int i = 0; i < n; i ++) {
-    heavy[i] = -1;
+    chain_id[i] = heavy[i] = -1;
   }
   int x;
-  for (int i = 1; i <= n; i ++) {
-    scanf("%d", &x);
+  for (int i = 0; i < n; i ++) {
+    scanf("%d", &x); x--;
+    parent[i] = x;
     if (x == 0) {
       root = i;
     } else {
       tree[x].push_back(i);
     }
   }
-  find_heavy_edge(root);
-  split(root);
-  for (int i = 0; i < path_num; i ++) {
-    snapshots[i].push_back(make_pair(0, new Segment(0, paths[i].size())));
+  dfs(root, 0);
+  chain_size = 0;
+  for (int i = 0; i < n; i ++) {
+    if (chain_id[i] == -1) {
+      for (int k = i; k != -1; k = heavy[k]) {
+        chain_id[k] = chain_size;
+        chain[chain_id[k]].push_back(k);
+        chain_pos[k] = chain[chain_size].size() - 1;
+      }
+      chain_id ++;
+    }
   }
+
+  for (int i = 0; i < chain_id.size(); i ++) {
+    snapshots[i].push_back(make_pair(0, new Segment(0, chain[i].size())));
+  }
+
+  int m;
   scanf("%d", &m);
-  int type, a, b, k, y;
-  while (m --) {
+  int a, b, k, y, type;
+  for (int i = 1; i <= m; i ++) {
     scanf("%d", &type);
     if (type == 1) {
       scanf("%d", &a);
+      a --;
+      int id = chain_id[a];
+      Segment* last = snapshots[id][snapshots[id].size() - 1];
+      snapshots[id].push_back(make_pair(i,
+        last->clone(chain_pos[a], -1, 0, chain[id].size() - 1)));
+    } else {
+      scanf("%d%d%d%d", &a, &b, &k, &y);
+      a--, b--;
+      int c = lca(a, b);
+      if (a != c) {
+        while(chain_id[a] != chain_id[c]) {
+
+        }
+      }
     }
   }
+
   return 0;
 }
