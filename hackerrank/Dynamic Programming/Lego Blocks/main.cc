@@ -1,3 +1,6 @@
+// Author: wangyongliang.wyl@gmail.com (Wang Yongliang)
+// github: https://github.com/wangyongliang
+
 #include <iostream>
 #include <set>
 #include <map>

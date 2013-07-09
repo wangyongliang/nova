@@ -5,11 +5,11 @@ using namespace std;
 #define maxn 1010
 int dp[maxn][maxn];
 int mod = 1000000007;
-int combin[maxn][maxn] = {0};
+int combine[maxn][maxn] = {0};
 int format(int number) {
-
   return (number % mod + mod) % mod;
 }
+
 int tmp[33][maxn][maxn];
 int main() {
 
@@ -19,11 +19,11 @@ int main() {
   int zero;
   vector<int> divisor;
 
-  combin[0][0] = 1;
+  combine[0][0] = 1;
   for (i = 1; i < maxn; i ++ ) {
-    combin[i][0] = 1;
+    combine[i][0] = 1;
     for (j = 1; j <= i; j ++) {
-      combin[i][j] = format( combin[i - 1][j - 1] + combin[i - 1][j]);
+      combine[i][j] = format( combine[i - 1][j - 1] + combine[i - 1][j]);
     }
   }
 
@@ -35,7 +35,7 @@ int main() {
 
     int ans = 0;
     for (i = 0; i <= m; i ++ )  {
-      ans = format(ans + combin[len][i]);
+      ans = format(ans + combine[len][i]);
     }
     for (i = 1; i < len ; i ++) {
       if (len % i == 0) divisor.push_back(i);

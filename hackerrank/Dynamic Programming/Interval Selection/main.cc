@@ -1,3 +1,7 @@
+// Author: wangyongliang.wyl@gmail.com (Wang Yongliang)
+// github: https://github.com/wangyongliang
+// Solution: Greedy, scan each end point and choose at most 2 interval whose end point is less
+
 #include <iostream>
 #include <algorithm>
 #include <vector>

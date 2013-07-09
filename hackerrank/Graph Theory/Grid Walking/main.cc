@@ -22,9 +22,7 @@ int main() {
   }
 
   cin >> t;
-  //    freopen("old.txt","w",stdout);
   while (t--) {
-
     int n, m;
     cin >> n >> m;
     for (int i = 0; i < 20; i ++) {
@@ -46,16 +44,15 @@ int main() {
     }
 
     for (int i = 0; i < n; i ++) {
-      for (int j = 0; j < d[i]; j ++) dp[0][j] = 0;
+      for (int j = 0; j < d[i]; j ++)
+        dp[0][j] = 0;
       dp[0][x[i]] = 1;
       for (int k = 0; k <= m; k ++ ) {
-        for (int j = 0; j < d[i]; j ++) dp[k + 1][j] = 0;
+        for (int j = 0; j < d[i]; j ++)
+          dp[k + 1][j] = 0;
         for (int j = 0; j < d[i]; j ++) {
-          //if (dp[k][j])
-          {
-            if (j - 1 >=   0) dp[k + 1][j - 1] = ( dp[k + 1][j - 1] + dp[k][j]) % MOD;
-            if (j + 1 < d[i]) dp[k + 1][j + 1] = ( dp[k + 1][j + 1] + dp[k][j]) % MOD;
-          }
+          if (j - 1 >=   0) dp[k + 1][j - 1] = ( dp[k + 1][j - 1] + dp[k][j]) % MOD;
+          if (j + 1 < d[i]) dp[k + 1][j + 1] = ( dp[k + 1][j + 1] + dp[k][j]) % MOD;
         }
         sum[i][k] = 0;
         for (int j = 0; j < d[i]; j ++) sum[i][k] = (sum[i][k] + dp[k][j]) % MOD;
@@ -76,6 +73,5 @@ int main() {
     long long ans = dp[n - 1][m];
     cout << ans << endl;
   }
-  //    PS;
   return 0;
 }

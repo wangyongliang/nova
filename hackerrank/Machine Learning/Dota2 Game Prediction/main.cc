@@ -2,7 +2,7 @@
 // github: https://github.com/wangyongliang
 // Problem: https://www.hackerrank.com/challenges/dota2prediction (Dota 2 Game Prediction)
 // Final score: 11
-// Editor: predict via Bayes, but counting all the combination
+// Solution: predict via Bayes, but counting all the combination
 
 #include <cstdio>
 #include <algorithm>
@@ -24,7 +24,7 @@ public:
         bits_count_[(1<<i) + j] = bits_count_[j] + 1;
       }
     }
-    
+
     for (int i = 0; i < 6; i ++) weight_[i] = i;
 
     FILE *fp = fopen("trainingdata.txt", "r");
@@ -71,7 +71,7 @@ private:
         }
         if (left.size() < 5)
           left.push_back(heros_[player]);
-        else 
+        else
           right.push_back(heros_[player]);
         player ="";
       } else {
@@ -125,12 +125,12 @@ private:
       hash_code = Hash(left, i);
 
       if (CalculateScore(hash_code, score)) {
-        score_left[bits_count_[i]].push_back(score);        
+        score_left[bits_count_[i]].push_back(score);
       }
 
       hash_code = Hash(right, i);
       if (CalculateScore(hash_code, score)) {
-        score_right[bits_count_[i]].push_back(score);        
+        score_right[bits_count_[i]].push_back(score);
       }
     }
     score = 0.0;
