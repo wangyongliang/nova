@@ -1,4 +1,4 @@
-Algorithm
+Nova
 =========
 
-Track the source code of algorithm contest
+solutions of algorithm contest
